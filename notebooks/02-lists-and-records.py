@@ -272,12 +272,20 @@ def _(mo):
 
 @app.cell
 def _():
-    score = 95
+    score = 75
     if score >= 90:
         print("A")
     elif score >= 60:
         print("Pass")
     return
+
+
+app._unparsable_cell(
+    r"""
+    When a score satisfies multiple conditions, the first true condition in the if/ elif chain determines what gets printed.
+    """,
+    name="_"
+)
 
 
 @app.cell(hide_code=True)
@@ -304,6 +312,38 @@ def _(mo):
 def _():
     statuses = ["shipped", "pending", "shipped", "cancelled", "shipped"]
     statuses
+    return (statuses,)
+
+
+@app.cell
+def _(statuses):
+    shipped_count = 0
+
+    for status in statuses:
+        if status == "shipped":
+            shipped_count = shipped_count + 1
+
+    print(shipped_count)
+    return (shipped_count,)
+
+
+@app.cell
+def _(statuses):
+    not_shipped_count = 0
+
+    for status_2 in statuses:
+        if status_2 != "shipped":
+            not_shipped_count = not_shipped_count + 1
+
+    print(not_shipped_count)
+    return
+
+
+@app.cell
+def _(shipped_count, statuses):
+    percentage_shipped = shipped_count / len(statuses) * 100
+
+    print(percentage_shipped)
     return
 
 
@@ -331,9 +371,23 @@ def _(mo):
 @app.cell
 def _():
     order_lines = ["notebook", "pen"]
-    order_lines.append(["stapler", "tape"])
+    order_lines.extend(["stapler", "tape"])
     len(order_lines)
+    return (order_lines,)
+
+
+@app.cell
+def _(order_lines):
+    print(order_lines[2])
     return
+
+
+app._unparsable_cell(
+    r"""
+    The append() method always adds one item to a list, regardless of what you give it.
+    """,
+    name="_"
+)
 
 
 @app.cell(hide_code=True)
@@ -363,6 +417,20 @@ def _():
     print(sorted(tickers))
     print(tickers.sort())
     tickers
+    return (tickers,)
+
+
+app._unparsable_cell(
+    r"""
+    sorted(tickers) returns a new sorted list, while tickers.sort() changes the original list in place and returns None.
+    """,
+    name="_"
+)
+
+
+@app.cell
+def _(tickers):
+    print(sorted(tickers, reverse=True))
     return
 
 
@@ -396,10 +464,24 @@ def _(mo):
 @app.cell
 def _():
     prices = [12.50, 8.00, 19.99]
-    sale_prices = prices
+    sale_prices = prices[:]
     sale_prices.append(4.99)
     prices
+    return prices, sale_prices
+
+
+@app.cell
+def _(prices, sale_prices):
+    print(prices is sale_prices)
     return
+
+
+app._unparsable_cell(
+    r"""
+    I would want two names to refer to the same list when I intentionally want changes made through either name to affect the same data.
+    """,
+    name="_"
+)
 
 
 @app.cell(hide_code=True)
