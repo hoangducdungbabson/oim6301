@@ -644,6 +644,49 @@ def _():
     return (orders,)
 
 
+@app.cell
+def _(orders):
+    total_freight = 0
+
+    for order in orders:
+        total_freight = total_freight + order["Freight"]
+
+    total_freight
+    return
+
+
+@app.cell
+def _(orders):
+    not_shipped = 0
+
+    for _order in orders:
+        if _order["ShippedDate"] is None:
+            not_shipped = not_shipped + 1
+
+    not_shipped
+    return
+
+
+@app.cell
+def _(orders):
+    largest_order = orders[0]
+
+    for _order in orders:
+        if _order["Freight"] > largest_order["Freight"]:
+            largest_order = _order
+
+    largest_order
+    return
+
+
+app._unparsable_cell(
+    r"""
+    The three orders with no ShippedDate were placed in 2018, while the other 27 orders were placed in 2016.
+    """,
+    name="_"
+)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -702,7 +745,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    *One row is ...*
+    *One row is a single customer order placed with the company.*
 
     *(Replace this line with your own sentence. If this cell shows you code instead of
     text, use the cell menu to turn it into a markdown cell.)*
@@ -743,6 +786,28 @@ def _():
         {"Symbol": "TSLA", "Shares": 150, "Price": 255.70},
     ]
     portfolio
+    return (portfolio,)
+
+
+app._unparsable_cell(
+    r"""
+    For each stock, I would multiply the number of shares by its price per share.
+    I would do this for all six stocks in the portfolio.
+    Then I would add those six amounts together.
+    The result would be the total cost of the portfolio.
+    """,
+    name="_"
+)
+
+
+@app.cell
+def _(portfolio):
+    total_cost = 0
+
+    for holding in portfolio:
+        total_cost = total_cost + holding["Shares"] * holding["Price"]
+
+    total_cost
     return
 
 
