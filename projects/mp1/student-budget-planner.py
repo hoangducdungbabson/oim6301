@@ -71,8 +71,9 @@ app._unparsable_cell(
     + Step 1: Monthly budget => To calculate the amount of money that students have per month.
     + Step 2: Monthly expenses in different types => To calculate the expenses in each type of expenditure, know what the students spent more or less.
     + Step 3: The sum of all monthly expenses => To know exactly the total amount of expenses monthly.
-    + Step 4: Compare the percentage of expenses with the total budget => To know exactly what percentage of expenses we have compared to the total budget.
-    + Step 5: Notify the results and warnings => To help the students decide whether they need to save the amount of budget or not.
+    + Step 4: Calculate remaining budget => To know exactly what the amount of the remaining budget is.
+    + Step 5: Calculate percentage of budget used => To understand the percentage use of the budget monthly.
+    + Step 6: Display results and budget warning + Smart Budget Recommendations to help students make better financial decisions.
     """,
     name="_"
 )
@@ -108,8 +109,20 @@ def _(mo):
 
 @app.cell
 def _():
-    # Your inputs.
-    return
+    # Student Monthly Budget Planner - Inputs
+
+    monthly_budget = 2000
+
+    expenses = {
+        "Rent": 1000,
+        "Food": 350,
+        "Transportation": 100,
+        "Entertainment": 150,
+        "Other": 100
+    }
+    # Additional input for Section 8
+    savings_goal = 500
+    return expenses, monthly_budget, savings_goal
 
 
 @app.cell(hide_code=True)
@@ -123,8 +136,72 @@ def _(mo):
 
 
 @app.cell
-def _():
-    return
+def _(expenses):
+    #Step 3: Calculate total expenses using a loop 
+    total_expenses = 0
+
+    for category, amount in expenses.items():
+        total_expenses += amount
+        print(f"{category}: ${amount}")
+
+    print(f"Total Expenses: ${total_expenses}")
+    return (total_expenses,)
+
+
+@app.cell
+def _(monthly_budget, total_expenses):
+
+    # Step 4: Calculate remaining budget
+
+    remaining_budget = monthly_budget - total_expenses
+
+    print(f"Monthly Budget: ${monthly_budget}")
+    print(f"Total Expenses: ${total_expenses}")
+    print(f"Remaining Budget: ${remaining_budget}")
+
+    return (remaining_budget,)
+
+
+@app.cell
+def _(monthly_budget, total_expenses):
+
+    # Step 5: Calculate percentage of budget used
+
+    if monthly_budget > 0:
+        budget_used_percentage = (total_expenses / monthly_budget) * 100
+    else:
+        budget_used_percentage = 0
+
+    print(f"Budget Used: {budget_used_percentage:.1f}%")
+
+    return (budget_used_percentage,)
+
+
+@app.cell
+def _(budget_used_percentage):
+
+    # Step 6: Display results and budget warning + Smart Budget Recommendations
+
+    if budget_used_percentage > 100:
+        budget_status = "Over budget"
+        advice = "Warning! You have exceeded your monthly budget."
+
+    elif budget_used_percentage > 80:
+        budget_status = "High spending"
+        advice = "Consider reducing non-essential expenses."
+
+    elif budget_used_percentage > 50:
+        budget_status = "Moderate spending"
+        advice = "Monitor your expenses carefully."
+
+    else:
+        budget_status = "Low spending"
+        advice = "You have plenty of budget remaining."
+
+    print(f"Budget Status: {budget_status}")
+    print(f"Advice: {advice}")
+
+    return advice, budget_status
 
 
 @app.cell(hide_code=True)
@@ -138,8 +215,41 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(
+    advice,
+    budget_status,
+    budget_used_percentage,
+    monthly_budget,
+    remaining_budget,
+    total_expenses,
+):
+
+    # Section 5: Student Budget Planner - Results
+
+    print("STUDENT MONTHLY BUDGET PLANNER")
+    print("-" * 45)
+    print(f"{'Metric':<25} {'Result':>15}")
+    print("-" * 45)
+
+    print(f"{'Monthly Budget':<25} ${monthly_budget:>14,.2f}")
+    print(f"{'Total Expenses':<25} ${total_expenses:>14,.2f}")
+    print(f"{'Remaining Budget':<25} ${remaining_budget:>14,.2f}")
+    print(f"{'Budget Used':<25} {budget_used_percentage:>14.1f}%")
+    print(f"{'Budget Status':<25} {budget_status:>15}")
+
+    print("-" * 45)
+    print(f"Recommendation: {advice}")
+
     return
+
+
+app._unparsable_cell(
+    r"""
+    Conclusion
+    With a monthly budget of $2,000 and total expenses of $1,700, the student has $300 remaining (15% of the budget), but should consider reducing non-essential expenses because 85% of the monthly budget has already been used.
+    """,
+    name="_"
+)
 
 
 @app.cell(hide_code=True)
@@ -153,7 +263,26 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(expenses, total_expenses):
+
+    # Section 6: Verify total expenses independently
+
+    # Method 1: Total calculated using a for loop
+    loop_total = total_expenses
+
+    # Method 2: Total calculated using sum()
+    sum_total = sum(expenses.values())
+
+    # Compare the two results
+    print(f"Total using for loop: ${loop_total}")
+    print(f"Total using sum(): ${sum_total}")
+
+    if loop_total == sum_total:
+        print("Verification successful! Both totals match.")
+    else:
+        print("Warning! The two totals do not match.")
+    assert total_expenses == sum(expenses.values())
+
     return
 
 
@@ -169,6 +298,20 @@ def _(mo):
     return
 
 
+app._unparsable_cell(
+    r"""
+    At first, the AI agent had a basic suggestion related to budget warning system. It is only classified as "Within budget" or "Over budget". However, I wanted the tool to provide a more detailed and thoughtful financial guidnace before students exceeded their budgets.
+
+    I applied different spending thresholds (50%, 80%, and 100%) to distinguish between low, moderate, high, and excessive spending.
+
+    I believe that this shift is ideal for the students to raise their awareness of the importance of managing a cost-effective spending behavior. I checked the updated logic using my example, where $1,700 in expenses out of a $2,000 budget represents 85% usage and triggers a "High spending" warning.
+
+    This improvement can be found in Section 4, Step 6 - Smart Budget Recommendations.
+    """,
+    name="_"
+)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -177,6 +320,45 @@ def _(mo):
     *Take at least one step past the main task, in any direction, and use your agent as much as you like. It does not have to work. State what you tried, what you found, and where it is in this notebook.*
     """)
     return
+
+
+@app.cell
+def _(remaining_budget, savings_goal):
+
+    # Section 8: Going Further - Savings Goal Simulator
+
+
+
+    current_savings = remaining_budget
+
+    additional_savings_needed = max(
+        0, savings_goal - current_savings
+    )
+
+    print("SAVINGS GOAL SIMULATOR")
+    print("-" * 40)
+    print(f"Monthly Savings Goal: ${savings_goal}")
+    print(f"Current Savings: ${current_savings}")
+    print(f"Additional Savings Needed: ${additional_savings_needed}")
+
+    if additional_savings_needed > 0:
+        print(f"Recommendation: Reduce expenses by ${additional_savings_needed} to reach your goal.")
+    else:
+        print("Congratulations! You have reached your savings goal.")
+
+    return
+
+
+app._unparsable_cell(
+    r"""
+    In my opinion, the Student Budget Planner will be more efficient when it has a simulator that can help students determine how much they need to reduce their expenses to achieve a monthly savings target.
+
+    I introduced a $500 monthly savings goal and compared it with the remaining budget calculated earlier. With a $2,000 monthly budget and $1,700 in expenses, the students has $300 remaining and needs to reduce expenses by an additional $200 to reach the savings goal.
+
+    The new feature is implemented in the code cell under Section 8 - Going Further. It helps provide an actionable recommendation beyond simply tracking expenses.
+    """,
+    name="_"
+)
 
 
 if __name__ == "__main__":
