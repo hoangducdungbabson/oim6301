@@ -10,15 +10,16 @@
 
 import marimo
 
-__generated_with = "0.24.2"
+__generated_with = "0.25.2"
 app = marimo.App(width="medium", sql_output="polars")
 
 
-@app.cell
-def _():
-    import marimo as mo
-
-    return (mo,)
+app._unparsable_cell(
+    r"""
+    $import marimo as mo
+    """,
+    name="_"
+)
 
 
 @app.cell(hide_code=True)
@@ -509,27 +510,35 @@ def _(mo):
     return
 
 
-@app.cell
-def _(List):
-    List 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **List:** Customers can add, remove, and reorder items.
+    """)
     return
 
 
-@app.cell
-def _(Set):
-    Set
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Set:** Each customer appears only once, avoiding duplicates.
+    """)
     return
 
 
-@app.cell
-def _(Dictionary):
-    Dictionary 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Dictionary:** Product names are used as keys to look up units sold.
+    """)
     return
 
 
-@app.cell
-def _(Tuple):
-    Tuple 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Tuple:** Shipment information cannot be changed once recorded.
+    """)
     return
 
 
@@ -547,6 +556,14 @@ def _(mo):
     *Check yourself: $116,302.70, the same as notebook 2.*
 
     **Going further.** Which holding cost the most? Build a dictionary from ticker to cost, then find the largest. *TSLA, $38,355.00.*
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    From my perspective, I prefer to use a list of dictionaries due to the fact that it allows me to access each stock's information by its key, namely symbol, shares, and price. This makes the code easier to read and understand compared to using tuples, where I need to remember the position of each value.
     """)
     return
 
@@ -617,6 +634,14 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    For each stock ticker, I keep a list of purchased shares with their quantities and prices, ordered from oldest to newest. When buying, I add a new batch to the list. Meanwhile, when selling, I use the oldest shares first and calculate the gain by subtracting the purchase price from the selling price and multiply by the number of shares sold. Eventually, I update the remaining shares and calculate the total gain.
+    """)
+    return
+
+
 @app.cell
 def _():
     year_trades = [
@@ -630,6 +655,92 @@ def _():
         ("2026-08-12", "AAPL", "sell", 40, 250.00),
     ]
     year_trades
+    return (year_trades,)
+
+
+@app.cell
+def _(year_trades):
+
+    inventory = {}
+    sale_results = []
+    total_gain = 0
+
+    for _date, _ticker, _action, _shares, _price in year_trades:
+        if _ticker not in inventory:
+            inventory[_ticker] = []
+
+        if _action == "buy":
+            inventory[_ticker].append([_shares, _price])
+
+        elif _action == "sell":
+            shares_to_sell = _shares
+            sale_gain = 0
+
+            while shares_to_sell > 0:
+                oldest_batch = inventory[_ticker][0]
+                shares_sold = min(shares_to_sell, oldest_batch[0])
+
+                sale_gain += shares_sold * (_price - oldest_batch[1])
+
+                oldest_batch[0] -= shares_sold
+                shares_to_sell -= shares_sold
+
+                if oldest_batch[0] == 0:
+                    inventory[_ticker].pop(0)
+
+            sale_results.append((_date, _ticker, sale_gain))
+            total_gain += sale_gain
+
+    print("FIFO sale gains:", sale_results)
+    print("FIFO total gain:", total_gain)
+    print("Remaining shares:", inventory)
+
+    return
+
+
+@app.cell
+def _(year_trades):
+
+    avg_inventory = {}
+    avg_sale_results = []
+    avg_total_gain = 0
+
+    for _date, _ticker, _action, _shares, _price in year_trades:
+        if _ticker not in avg_inventory:
+            avg_inventory[_ticker] = [0, 0.0]
+
+        current_shares, current_cost = avg_inventory[_ticker]
+
+        if _action == "buy":
+            avg_inventory[_ticker] = [
+                current_shares + _shares,
+                current_cost + _shares * _price
+            ]
+
+        elif _action == "sell":
+            average_price = current_cost / current_shares
+            gain = _shares * (_price - average_price)
+
+            avg_total_gain += gain
+            avg_sale_results.append((_date, _ticker, gain))
+
+            avg_inventory[_ticker] = [
+                current_shares - _shares,
+                current_cost - _shares * average_price
+            ]
+
+    print("Average cost sale gains:", avg_sale_results)
+    print("Average cost total gain:", round(avg_total_gain, 2))
+    print("Remaining inventory:", avg_inventory)
+
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    I would prefer FIFO if the goal is to report higher realized gains this year. FIFO generates a total gain of $7,900, compared to $7,533.33 under the Average Cost method. However, if the client wants to report lower realized gains, Average Cost would be preferable, assuming the method is permitted under the applicable rules. Therefore, the preferred method depends on the client's financial reporting objectives.
+    """)
     return
 
 
@@ -669,6 +780,7 @@ def _(requests):
     )
     babson_reply = requests.get(babson_url, timeout=10)
     babson_reply.status_code
+    print(babson_reply.status_code)
     return (babson_reply,)
 
 
@@ -687,6 +799,16 @@ def _(babson_reply):
     return (babson_weather,)
 
 
+@app.cell
+def _(babson_weather):
+    _temperature = babson_weather["current"]["temperature_2m"]
+    _wind = babson_weather["current"]["wind_speed_10m"]
+
+    print(f"Temperature at Babson: {_temperature}°F")
+    print(f"Wind speed at Babson: {_wind} mph")
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -698,6 +820,15 @@ def _(mo):
 @app.cell
 def _(babson_weather):
     babson_weather["current"]["temperature_2m"]
+    return
+
+
+@app.cell
+def _(babson_weather):
+    print("Units:", babson_weather["current_units"])
+
+    print("Latitude:", babson_weather["latitude"])
+    print("Longitude:", babson_weather["longitude"])
     return
 
 
@@ -916,6 +1047,16 @@ def _(requests, wellesley_url):
 def _(wellesley_weather):
     wellesley_temperature = wellesley_weather["current"]["temperature_2m"]
     wellesley_temperature
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **G. The First Result**
+
+    The first result is Babson Park in Florida, not Massachusetts. Code that always selects `[0]` would choose the wrong location, even though it runs without errors. Therefore, we should check the state and coordinates before using the result.
+    """)
     return
 
 
