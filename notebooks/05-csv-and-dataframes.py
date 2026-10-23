@@ -233,6 +233,37 @@ def _(towns_from_file):
     return
 
 
+@app.cell
+def _(towns_from_file):
+    # Start with the first town as both the smallest and largest
+    smallest_town = towns_from_file[0]
+    largest_town = towns_from_file[0]
+
+    # Compare each town's population
+    for current_town in towns_from_file:
+        current_population = int(current_town["population"])
+
+        if current_population < int(smallest_town["population"]):
+            smallest_town = current_town
+
+        if current_population > int(largest_town["population"]):
+            largest_town = current_town
+
+    # Display the results
+    print(
+        "Town with the fewest people:",
+        smallest_town["name"],
+        int(smallest_town["population"]),
+    )
+
+    print(
+        "Town with the most people:",
+        largest_town["name"],
+        int(largest_town["population"]),
+    )
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
