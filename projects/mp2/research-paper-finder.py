@@ -104,20 +104,20 @@ def _(max_papers, query, year_param):
         headers = {}
         if API_KEY:
             headers["x-api-key"] = API_KEY
-    
+
         search_url = "https://api.semanticscholar.org/graph/v1/paper/search"
         search_params = {
             "query": _query,
             "limit": _limit,
             "fields": "paperId,title,year,citationCount,url"
         }
-    
+
         try:
             res = requests.get(search_url, params=search_params, headers=headers, timeout=10)
             res.raise_for_status()
             search_data = res.json()
             raw_papers = search_data.get("data", [])
-        
+    
             records_list = []
             for _p in raw_papers:
                 if _p and _p.get("title"):
@@ -218,6 +218,8 @@ def _(mo):
     If I change `max_papers` from 10 to 5 in the Inputs cell, I expect the returned table in Section 5 to display exactly 5 papers, and the total citation count to decrease proportionally.
 
     *Outcome after change:* After changing `max_papers = 5` and rerunning, the table displayed exactly 5 rows and the numbers updated as predicted.
+
+    Final solution: Restored input parameters to 10 and verified all notebook sections for final submission.
 
     # 9. Going Further
     For the Going Further requirement, I implemented an automated local backup caching mechanism in `projects/mp2/data/papers.json`. If the Semantic Scholar API becomes unavailable or rate-limited during execution, the tool seamlessly loads the cached JSON records so the notebook remains fully functional offline.
