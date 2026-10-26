@@ -10,16 +10,15 @@
 
 import marimo
 
-__generated_with = "0.25.2"
+__generated_with = "0.24.2"
 app = marimo.App(width="medium", sql_output="polars")
 
 
-app._unparsable_cell(
-    r"""
-    $import marimo as mo
-    """,
-    name="_"
-)
+@app.cell
+def _():
+    import marimo as mo
+
+    return (mo,)
 
 
 @app.cell(hide_code=True)
@@ -694,7 +693,6 @@ def _(year_trades):
     print("FIFO sale gains:", sale_results)
     print("FIFO total gain:", total_gain)
     print("Remaining shares:", inventory)
-
     return
 
 
@@ -732,7 +730,6 @@ def _(year_trades):
     print("Average cost sale gains:", avg_sale_results)
     print("Average cost total gain:", round(avg_total_gain, 2))
     print("Remaining inventory:", avg_inventory)
-
     return
 
 
