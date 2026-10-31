@@ -94,60 +94,153 @@ def _(mo):
 def _(max_papers, query, year_param):
     import json
     import os
+    import time
+    from pathlib import Path
+
     import requests
     from dotenv import load_dotenv
 
-    load_dotenv()
-    API_KEY = os.getenv("SEMANTIC_SCHOLAR_API_KEY")
+    load_dotenv(dotenv_path=Path.cwd() / ".env", override=True)
+
+    API_KEY = (os.getenv("SEMANTIC_SCHOLAR_API_KEY") or "").strip()
+    print("API key loaded:", bool(API_KEY))
+
+    if not API_KEY:
+        raise RuntimeError(
+            "No API key was loaded. Check the .env file in the oim6301 folder."
+        )
+
+
+    def citation_count(paper):
+        return paper.get("citationCount") or 0
+
+
+    def request_with_retry(method, url, **kwargs):
+        """Try at most three times when the API returns HTTP 429."""
+        for attempt in range(3):
+            response = requests.request(
+                method,
+                url,
+                timeout=30,
+                **kwargs,
+            )
+
+            if response.status_code != 429:
+                response.raise_for_status()
+                return response
+
+            # Stop if the server supplies waiting instructions.
+            retry_after = response.headers.get("Retry-After")
+            if retry_after:
+                print(f"API asks us to wait: Retry-After={retry_after}")
+                response.raise_for_status()
+
+            if attempt < 2:
+                wait_seconds = 5 * (2 ** attempt)
+                print(
+                    f"HTTP 429. Waiting {wait_seconds} seconds "
+                    f"before retry {attempt + 1} of 2."
+                )
+                time.sleep(wait_seconds)
+            else:
+                print("API response:", response.text[:1000])
+                response.raise_for_status()
+
 
     def fetch_academic_papers(_query, _year_range, _limit=10):
-        headers = {}
-        if API_KEY:
-            headers["x-api-key"] = API_KEY
+        """Search for IDs, then fetch details for those IDs."""
+        if not 1 <= _limit <= 100:
+            raise ValueError("The paper limit must be between 1 and 100.")
 
-        search_url = "https://api.semanticscholar.org/graph/v1/paper/search"
-        search_params = {
-            "query": _query,
-            "limit": _limit,
-            "fields": "paperId,title,year,citationCount,url"
-        }
+        headers = {"x-api-key": API_KEY}
+        base_url = "https://api.semanticscholar.org/graph/v1"
+        stage = "paper search"
 
         try:
-            res = requests.get(search_url, params=search_params, headers=headers, timeout=10)
-            res.raise_for_status()
-            search_data = res.json()
-            raw_papers = search_data.get("data", [])
-    
+            search_response = request_with_retry(
+                "GET",
+                f"{base_url}/paper/search",
+                params={
+                    "query": _query,
+                    "year": _year_range,
+                    "limit": _limit,
+                    "fields": "paperId",
+                },
+                headers=headers,
+            )
+            search_data = search_response.json()
+
+            paper_ids = []
+            for paper in search_data["data"]:
+                paper_id = paper.get("paperId")
+                if paper_id and paper_id not in paper_ids:
+                    paper_ids.append(paper_id)
+
+            if not paper_ids:
+                return []
+
+            # The second request uses IDs from the first request.
+            stage = "paper details"
+            time.sleep(1.2)
+
+            detail_response = request_with_retry(
+                "POST",
+                f"{base_url}/paper/batch",
+                params={"fields": "title,year,citationCount,url"},
+                json={"ids": paper_ids},
+                headers=headers,
+            )
+            detail_data = detail_response.json()
+
             records_list = []
-            for _p in raw_papers:
-                if _p and _p.get("title"):
-                    records_list.append(_p)
-        except Exception:
-            records_list = []
+            for paper in detail_data:
+                if paper and paper.get("title"):
+                    records_list.append(paper)
 
-        # Mock backup data if API returns empty or rate-limited
-        if not records_list:
-            records_list = [
-                {"paperId": "p1", "title": "Virtual Influencers in Digital Marketing: A Systematic Review", "year": 2022, "citationCount": 85, "url": "https://example.com/p1"},
-                {"paperId": "p2", "title": "The Impact of CGI Influencers on Consumer Engagement", "year": 2021, "citationCount": 142, "url": "https://example.com/p2"},
-                {"paperId": "p3", "title": "Anthropomorphism in Virtual Influencer Marketing", "year": 2023, "citationCount": 64, "url": "https://example.com/p3"},
-                {"paperId": "p4", "title": "Authenticity Perception of AI-Generated Influencers", "year": 2020, "citationCount": 210, "url": "https://example.com/p4"},
-                {"paperId": "p5", "title": "Social Media Endorsement by Virtual Avatars", "year": 2022, "citationCount": 47, "url": "https://example.com/p5"},
-                {"paperId": "p6", "title": "Ethics and Transparency in Virtual Influencer Campaigns", "year": 2023, "citationCount": 38, "url": "https://example.com/p6"},
-                {"paperId": "p7", "title": "Consumer Trust and Parasocial Interaction with Virtual Influencers", "year": 2021, "citationCount": 115, "url": "https://example.com/p7"},
-                {"paperId": "p8", "title": "Virtual Influencer Marketing on Instagram and TikTok", "year": 2024, "citationCount": 19, "url": "https://example.com/p8"},
-                {"paperId": "p9", "title": "Comparative Analysis of Real vs Virtual Influencers", "year": 2022, "citationCount": 93, "url": "https://example.com/p9"},
-                {"paperId": "p10", "title": "The Future of Synthetic Media in Advertising", "year": 2023, "citationCount": 51, "url": "https://example.com/p10"}
-            ][:_limit]
+            if len(records_list) != len(paper_ids):
+                print("Warning: some IDs did not return usable details.")
 
-        os.makedirs("projects/mp2/data", exist_ok=True)
-        with open("projects/mp2/data/papers.json", "w", encoding="utf-8") as f:
-            json.dump(records_list, f, indent=2)
+            return records_list
 
-        return records_list
+        except requests.HTTPError as error:
+            status = error.response.status_code
+            raise RuntimeError(
+                f"Semantic Scholar rejected the {stage} request "
+                f"(HTTP {status}). No fabricated papers were substituted. "
+                "No new results were saved for this run."
+            ) from error
 
-    records = fetch_academic_papers(query, year_param, max_papers)
-    return (records,)
+        except requests.RequestException as error:
+            raise RuntimeError(
+                f"The {stage} request failed. "
+                "No new results were saved for this run."
+            ) from error
+
+
+    fetched_records = fetch_academic_papers(
+        query, year_param, max_papers
+    )
+
+    records = sorted(
+        fetched_records,
+        key=citation_count,
+        reverse=True,
+    )
+
+    output_path = Path("projects/mp2/data/papers.json")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with output_path.open("w", encoding="utf-8") as _file:
+        json.dump(fetched_records, _file, indent=2, ensure_ascii=False)
+
+    print(f"Saved {len(fetched_records)} API records to {output_path}.")
+    return API_KEY, records
+
+
+@app.cell
+def _(API_KEY):
+    print("API key loaded:", bool(API_KEY))
+    return
 
 
 @app.cell(hide_code=True)
@@ -179,7 +272,7 @@ def _(query, records, year_end, year_start):
     summary_sentence = f"For the query '{query}' between {year_start} and {year_end}, found {len(records)} papers with a total of {total_citations} citations (averaging {avg_citations:.1f} citations per paper)."
     print("\nSummary:")
     print(summary_sentence)
-    return (total_citations,)
+    return
 
 
 @app.cell(hide_code=True)
@@ -191,16 +284,30 @@ def _(mo):
 
 
 @app.cell
-def _(max_papers, records, total_citations):
-    _check_citations = sum([(_p.get("citationCount", 0) if _p else 0) or 0 for _p in records])
-    _check_count = len(records)
+def _(records):
+    if not records:
+        print("No papers returned; verification skipped.")
+    else:
+        # Find the highest citation count without sorting.
+        _highest_citations = 0
 
-    print(f"Primary Citation Total: {total_citations}")
-    print(f"Verification Citation Total: {_check_citations}")
-    print(f"Record Count: {_check_count} (Expected limit: {max_papers})")
+        for _paper in records:
+            _citations = _paper.get("citationCount") or 0
 
-    assert total_citations == _check_citations, "Citation counts do not match!"
-    print("✅ Verification Passed: The numbers match across recalculations.")
+            if _citations > _highest_citations:
+                _highest_citations = _citations
+
+        # Compare with the first paper in the sorted results.
+        _first_citations = records[0].get("citationCount") or 0
+
+        print(f"Top-ranked paper: {_first_citations} citations")
+        print(f"Maximum found by scanning: {_highest_citations}")
+
+        assert _first_citations == _highest_citations, (
+            "The top-ranked paper does not have the highest citation count."
+        )
+
+        print("Verification passed: both methods agree.")
     return
 
 
@@ -211,15 +318,16 @@ def _(mo):
     I asked the AI agent to write the API fetching function `fetch_academic_papers`. Initially, the agent generated code using complex nested list comprehensions. I modified the code to use explicit standard `for` loops with leading underscores for loop variables (e.g., `for _paper in raw_papers:`) to align with course coding requirements and readability standards. I verified its correctness using the verification check in Section 6.
 
     # 8. Reading It Back
-    - **`fetch_academic_papers(query, year_range, limit)`**: Accepts a query string, year range string, and integer limit. Returns a list of dictionaries containing paper metadata (`title`, `year`, `citationCount`, `url`). I asked the agent to clarify how the local JSON fallback mechanism works when network requests fail.
-    - **`sum([(_p.get("citationCount", 0) if _p else 0) or 0 for _p in records])`**: Accepts the list of paper records and returns the aggregate citation sum for verification.
 
-    **Prediction before changing inputs:**
-    If I change `max_papers` from 10 to 5 in the Inputs cell, I expect the returned table in Section 5 to display exactly 5 papers, and the total citation count to decrease proportionally.
+    - **Function:** `fetch_academic_papers(_query, _year_range, _limit)` takes a topic, year range, and paper limit. It searches for paper IDs, then requests their details and returns a list of dictionaries. Failed requests raise an error instead of producing fabricated papers.
 
-    *Outcome after change:* After changing `max_papers = 5` and rerunning, the table displayed exactly 5 rows and the numbers updated as predicted.
+    - **Expression:** `paper.get("citationCount") or 0` retrieves the citation count and uses zero when the value is missing or `None`.
 
-    Final solution: Restored input parameters to 10 and verified all notebook sections for final submission.
+    - **Line I needed help with:** `time.sleep(1.2)`. I asked where to add this line and learned that it pauses execution before the second request to help respect the API rate limit.
+
+    **Additional prediction exercise following feedback:** The earlier prediction commit already included its outcome. For this additional exercise, I will commit the prediction before changing the input.
+
+    If I change `max_papers` from 10 to 5, I predict at most five records after successful requests. Total citations will not necessarily decrease proportionally.
 
     # 9. Going Further
     For the Going Further requirement, I implemented an automated local backup caching mechanism in `projects/mp2/data/papers.json`. If the Semantic Scholar API becomes unavailable or rate-limited during execution, the tool seamlessly loads the cached JSON records so the notebook remains fully functional offline.
