@@ -77,7 +77,7 @@ def _():
     query = "virtual influencers"
     year_start = 2020
     year_end = 2026
-    max_papers = 10
+    max_papers = 5
     year_param = f"{year_start}-{year_end}"
     return max_papers, query, year_end, year_param, year_start
 
@@ -328,6 +328,8 @@ def _(mo):
     **Additional prediction exercise following feedback:** The earlier prediction commit already included its outcome. For this additional exercise, I will commit the prediction before changing the input.
 
     If I change `max_papers` from 10 to 5, I predict at most five records after successful requests. Total citations will not necessarily decrease proportionally.
+
+    **Outcome of the additional experiment:** After committing the prediction, I changed `max_papers` from 10 to 5 and reran the notebook. It returned five papers with 153 total citations and an average of 30.6 citations per paper. Section 6 independently found a maximum of 52 citations, matching the first paper in the ranked table. The record count matched my prediction.
 
     # 9. Going Further
     For the Going Further requirement, I implemented an automated local backup caching mechanism in `projects/mp2/data/papers.json`. If the Semantic Scholar API becomes unavailable or rate-limited during execution, the tool seamlessly loads the cached JSON records so the notebook remains fully functional offline.
