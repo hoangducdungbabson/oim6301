@@ -60,6 +60,7 @@ def _(mo):
       - The API response contains total matching count; I verify my fetched list length matches min(total, limit).
     - **Which check will you use in section 6, and which two numbers should agree?**
       - The total citation sum calculated in Section 5 will match an independent recalculation loop in Section 6.
+    - **Implementation update following feedback:** The final version filters publication years in the search request and ranks the retrieved papers by citation count. It saves successful API results as a local JSON snapshot, without automatically loading them offline. It compares the number of usable detailed records with the number of requested paper IDs and warns if they differ; it does not retrieve every matching paper. Section 6 checks that the first ranked paper's citation count matches the maximum found using a separate loop.
     """)
     return
 
@@ -77,7 +78,7 @@ def _():
     query = "virtual influencers"
     year_start = 2020
     year_end = 2026
-    max_papers = 5
+    max_papers = 10
     year_param = f"{year_start}-{year_end}"
     return max_papers, query, year_end, year_param, year_start
 
@@ -315,7 +316,7 @@ def _(records):
 def _(mo):
     mo.md(r"""
     # 7. Working With the Agent
-    I asked the AI agent to write the API fetching function `fetch_academic_papers`. Initially, the agent generated code using complex nested list comprehensions. I modified the code to use explicit standard `for` loops with leading underscores for loop variables (e.g., `for _paper in raw_papers:`) to align with course coding requirements and readability standards. I verified its correctness using the verification check in Section 6.
+    I used AI assistance to revise the API workflow into two dependent requests, send the year filter, remove fabricated fallback data, and handle HTTP 429 errors with limited retries. I asked where to place `time.sleep(1.2)`. I checked the returned paper links and tested the paper limit. Section 6 verifies the highest citation count using sorting and a separate scanning loop.
 
     # 8. Reading It Back
 
@@ -332,7 +333,8 @@ def _(mo):
     **Outcome of the additional experiment:** After committing the prediction, I changed `max_papers` from 10 to 5 and reran the notebook. It returned five papers with 153 total citations and an average of 30.6 citations per paper. Section 6 independently found a maximum of 52 citations, matching the first paper in the ranked table. The record count matched my prediction.
 
     # 9. Going Further
-    For the Going Further requirement, I implemented an automated local backup caching mechanism in `projects/mp2/data/papers.json`. If the Semantic Scholar API becomes unavailable or rate-limited during execution, the tool seamlessly loads the cached JSON records so the notebook remains fully functional offline.
+
+    The original version generated fabricated papers when the API rejected a request; this was not a valid backup cache. I removed that behavior. With AI assistance, I added a pause between the two dependent requests and limited retries for HTTP 429 errors. Successful API results are saved to `projects/mp2/data/papers.json`. If requests still fail after the retries, the notebook raises an error without saving new results. The saved JSON is a local snapshot; the notebook does not automatically load it for offline use.
 
     # 10. Time Spent
     3
