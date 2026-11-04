@@ -183,3 +183,4 @@ cython_debug/
 
 __marimo__/
 .env
+*.duckdb*

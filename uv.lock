@@ -990,20 +990,26 @@ name = "oim6301"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "duckdb" },
     { name = "faker" },
     { name = "marimo", extra = ["recommended"] },
     { name = "matplotlib" },
     { name = "pandas" },
+    { name = "polars" },
+    { name = "pyarrow" },
     { name = "python-dotenv" },
     { name = "requests" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "duckdb", specifier = ">=1.5.5" },
     { name = "faker", specifier = ">=40.39.0" },
     { name = "marimo", extras = ["recommended"], specifier = ">=0.24.2" },
     { name = "matplotlib", specifier = ">=3.11.2" },
     { name = "pandas", specifier = ">=3.0.6" },
+    { name = "polars", specifier = ">=1.44.2" },
+    { name = "pyarrow", specifier = ">=25.0.1" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
     { name = "requests", specifier = ">=2.34.2" },
 ]

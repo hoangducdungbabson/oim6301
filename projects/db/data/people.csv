@@ -1,0 +1,26 @@
+person_id,first_name,last_name,work_email,title,start_date,manager_id
+1,Anna,Chen,anna.chen@babsonai.example,Co-founder and CEO,2025-11-01,
+2,Ben,Patel,ben.patel@babsonai.example,Co-founder and CTO,2025-11-01,
+3,Carla,Nguyen,carla.nguyen@babsonai.example,Team Lead,2026-05-10,1
+4,David,Kim,david.kim@babsonai.example,Team Lead,2026-06-14,3
+5,Emma,Lopez,emma.lopez@babsonai.example,Team Lead,2026-03-18,2
+6,Frank,Wilson,frank.wilson@babsonai.example,Software Developer,2026-01-30,2
+7,Grace,Shah,grace.shah@babsonai.example,Software Developer,2026-05-27,5
+8,Henry,Brown,henry.brown@babsonai.example,AI Engineer,2026-02-02,2
+9,Iris,Tran,iris.tran@babsonai.example,Product Designer,2026-06-10,3
+10,James,Lee,james.lee@babsonai.example,AI Engineer,2026-04-22,2
+11,Kira,Davis,kira.davis@babsonai.example,Product Designer,2026-02-10,1
+12,Leo,Garcia,leo.garcia@babsonai.example,Data Analyst,2026-04-12,5
+13,Maya,Singh,maya.singh@babsonai.example,AI Engineer,2026-06-27,4
+14,Noah,Martin,noah.martin@babsonai.example,Data Analyst,2026-06-27,1
+15,Olivia,Wang,olivia.wang@babsonai.example,AI Engineer,2026-06-21,4
+16,Peter,Clark,peter.clark@babsonai.example,Data Analyst,2025-12-13,2
+17,Quinn,Adams,quinn.adams@babsonai.example,Software Developer,2026-06-23,1
+18,Rosa,Ahmed,rosa.ahmed@babsonai.example,Software Developer,2026-06-10,2
+19,Sam,Taylor,sam.taylor@babsonai.example,Product Designer,2026-04-07,1
+20,Tina,Park,tina.park@babsonai.example,Product Designer,2026-05-27,3
+21,Uma,Scott,uma.scott@babsonai.example,Product Designer,2026-06-16,1
+22,Victor,Reed,victor.reed@babsonai.example,Software Developer,2026-05-20,2
+23,Wendy,Pham,wendy.pham@babsonai.example,Software Developer,2025-11-22,1
+24,Xavier,Brooks,xavier.brooks@babsonai.example,AI Engineer,2025-12-21,1
+25,Yara,Ali,yara.ali@babsonai.example,AI Engineer,2026-05-14,3

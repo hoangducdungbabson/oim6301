@@ -1,0 +1,13 @@
+project_id,project_name,client_name,category,budget,start_date,status
+1,Customer Support Chatbot,Maple Retail,LLM app,18000,2025-11-01,active
+2,Sales Data Pipeline,Harbor Foods,data pipeline,24000,2025-12-01,active
+3,Invoice Assistant,Cedar Accounting,LLM app,12000,2026-01-05,done
+4,Internal Knowledge Search,,internal tool,8000,2026-02-02,done
+5,Inventory Forecast Pipeline,Oak Market,data pipeline,22000,2026-03-02,active
+6,Hiring Workflow Tool,,internal tool,6000,2026-04-01,paused
+7,Restaurant Review Assistant,River Cafe,LLM app,14000,2026-05-01,active
+8,Marketing Data Integration,Pine Studio,data pipeline,16000,2026-06-01,done
+9,Internal Expense Tracker,,internal tool,5000,2026-07-01,done
+10,Product Recommendation Assistant,Birch Shop,LLM app,20000,2026-08-03,active
+11,Client Onboarding Tool,,internal tool,7000,2026-10-20,planned
+12,Supplier Data Pipeline,Elm Supply,data pipeline,15000,2026-10-26,planned
