@@ -138,3 +138,10 @@ notebook. Both appeared with total expenses of 0.00. Their remaining
 budgets were 7,000.00 and 15,000.00, matching their original budgets.
 This check confirmed that the view includes projects that have not
 started spending.
+
+The first AI-generated membership check compared only the number of
+violations with the expected count of two. That could pass even if two
+wrong tasks were flagged. The revised check also compares the exact
+ordered task IDs with [299, 300] and fails if they differ. Additional
+queries check that assignments do not precede employee start dates
+and that no project is missing all its members.
