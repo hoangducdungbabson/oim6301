@@ -76,7 +76,7 @@ erDiagram
 
 I use person_id as the primary key because names can be duplicated
 and work emails can change. An ID keeps the employee's relationships
-with other tables stable.
+with other tables stable. I require each employee record to have a work email. Since the scenario does not specify whether employees can share an email address, I allow the same work email to appear in more than one employee record.
 
 The project_members table uses a composite primary key consisting
 of person_id and project_id. This allows an employee to participate
