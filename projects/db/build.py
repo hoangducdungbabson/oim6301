@@ -542,9 +542,9 @@ def _(ask, build_complete, mo):
         Before running these queries, the generator gives three
         expected answers:
 
-        - Two founders have no manager.
-        - Tasks 299 and 300 have assignees outside their project teams.
-        - Projects 11 and 12 have no expenses.
+        - **Expected: 2 people without a manager** (the two founders).
+        - **Expected: 2 tasks with assignees outside their project teams** (tasks 299 and 300).
+        - **Expected: 2 projects without expenses** (projects 11 and 12).
 
         The table compares these expectations with the database results.
         """),
