@@ -18,7 +18,7 @@ erDiagram
         int person_id PK
         string first_name
         string last_name
-        string work_email UK
+        string work_email 
         string title
         date start_date
         int manager_id FK
@@ -76,8 +76,7 @@ erDiagram
 
 I use person_id as the primary key because names can be duplicated
 and work emails can change. An ID keeps the employee's relationships
-with other tables stable. The work_email column is also unique to
-prevent two employees from sharing the same work email.
+with other tables stable.
 
 The project_members table uses a composite primary key consisting
 of person_id and project_id. This allows an employee to participate
