@@ -62,7 +62,7 @@ def _():
         person_id INTEGER PRIMARY KEY,
         first_name VARCHAR NOT NULL,
         last_name VARCHAR NOT NULL,
-        work_email VARCHAR NOT NULL UNIQUE,
+        work_email VARCHAR NOT NULL,
         title VARCHAR NOT NULL,
         start_date DATE NOT NULL,
         manager_id INTEGER REFERENCES people(person_id),
