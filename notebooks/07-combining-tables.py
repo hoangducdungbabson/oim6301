@@ -648,6 +648,14 @@ def _(ask_server):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Each row in `SalesOrderDetail` matches exactly one row in `SalesOrderHeader` on `SalesOrderID`. The join therefore returns one row for each order detail, for a total of 121,317 rows.
+    """)
+    return
+
+
 @app.cell
 def _(ask_server):
     ask_server("""

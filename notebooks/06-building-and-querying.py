@@ -464,6 +464,14 @@ def _(ask):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Each row in `towns` belongs to exactly one county. Grouping by county counts each town once, so adding the county counts gives the total number of rows in `towns`: 351.
+    """)
+    return
+
+
 @app.cell
 def _(ask):
     ask("""
