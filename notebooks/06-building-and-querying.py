@@ -247,7 +247,7 @@ def _(database, duckdb):
             )
             VALUES
                 ('Wellesley', 1988, 3129),
-                ('Wellesley', 1989, 3228)
+                ('Wellesley', 1989, 3228),
         """)
     return
 
@@ -390,6 +390,16 @@ def _(ask):
     return
 
 
+@app.cell
+def _(ask):
+    ask("""
+    SELECT county, count(*) AS town_count, sum(population) as total_pop, round(avg(population)) AS avg_pop, round(avg(average_single_family_bill_dollars), 2) AS avg_bill, max(population) AS max_pop  
+    FROM towns
+    GROUP BY county
+    """)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -405,7 +415,7 @@ def _(ask):
         FROM towns
         WHERE average_single_family_bill_dollars > 10000
         GROUP BY county
-        HAVING count(*) > 5
+        HAVING count(*) > 5 AND county LIKE '%sex'
         ORDER BY towns DESC
     """)
     return
@@ -421,6 +431,71 @@ def _(mo):
     3. For each county, the total population of its towns, and the share of those people living in towns with a bill over $10,000. Use `sum()` and a `CASE WHEN` inside it, or two queries. *Check yourself: the totals add up to 7,136,171.*
 
     **Going further.** Answer one question of your own about the towns with `GROUP BY`, and check it in polars on `town_rows`. Or download the TV show database from [Downloads](https://oim6301.github.io/downloads/), keep it out of your repository, and answer the two TV show questions from the topic slides.
+    """)
+    return
+
+
+@app.cell
+def _(ask):
+    ask("""
+        SELECT
+            c.name AS county,
+            COUNT(t.name) AS counted_towns,
+            c.towns AS recorded_towns,
+            COUNT(t.name) = c.towns AS matches
+        FROM counties AS c
+        LEFT JOIN towns AS t ON t.county = c.name
+        GROUP BY c.name, c.towns
+        ORDER BY counted_towns DESC
+    """)
+    return
+
+
+@app.cell
+def _(ask):
+    ask("""
+        SELECT SUM(town_count) AS total_towns
+        FROM (
+            SELECT county, COUNT(*) AS town_count
+            FROM towns
+            GROUP BY county
+        ) AS counts_by_county
+    """)
+    return
+
+
+@app.cell
+def _(ask):
+    ask("""
+        SELECT
+            county,
+            SUM(population) AS total_population,
+            ROUND(
+                100.0 * SUM(
+                    CASE
+                        WHEN average_single_family_bill_dollars > 10000
+                        THEN population
+                        ELSE 0
+                    END
+                ) / SUM(population),
+                2
+            ) AS pct_population_in_high_bill_towns
+        FROM towns
+        GROUP BY county
+        ORDER BY county
+    """)
+    return
+
+
+@app.cell
+def _(ask):
+    ask("""
+        SELECT SUM(total_population) AS grand_total_population
+        FROM (
+            SELECT county, SUM(population) AS total_population
+            FROM towns
+            GROUP BY county
+        ) AS population_by_county
     """)
     return
 
