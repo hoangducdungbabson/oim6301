@@ -100,7 +100,9 @@ def _(as_of, ask):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    As of October 31, 2026, 65 tasks across six projects were overdue and still incomplete, counting tasks with due dates before October 31.
+    The query returned 65 overdue and incomplete tasks across six projects.
+
+    **Assumption.** I count a task if it was due before October 31, 2026, and has no recorded completion date. Under this definition, a task completed on November 2 is excluded.
     """)
     return
 
