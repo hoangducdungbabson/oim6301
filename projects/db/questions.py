@@ -375,12 +375,14 @@ def _(mo):
 def _(ask):
     q8_manager_workload = ask("""
         WITH person_hours AS (
-            SELECT
-                person_id,
-                SUM(hours_per_week) AS weekly_hours
-            FROM project_members
-            GROUP BY person_id
-        )
+        SELECT
+            pm.person_id,
+            SUM(pm.hours_per_week) AS weekly_hours
+        FROM project_members AS pm
+        JOIN projects AS p
+            ON p.project_id = pm.project_id
+        GROUP BY pm.person_id
+    )
         SELECT
             m.person_id AS manager_id,
             m.first_name || ' ' || m.last_name AS manager_name,
