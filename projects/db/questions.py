@@ -265,6 +265,36 @@ def _(ask):
     """)
 
     q6_project_totals
+    return (q6_project_totals,)
+
+
+@app.cell
+def _(ask, q6_project_totals):
+    q6_independent = ask("""
+        SELECT
+            p.project_id,
+            (SELECT COUNT(*)
+             FROM tasks AS t
+             WHERE t.project_id = p.project_id) AS task_count,
+            COALESCE(
+                (SELECT SUM(e.amount)
+                 FROM expenses AS e
+                 WHERE e.project_id = p.project_id),
+                0
+            ) AS total_expenses
+        FROM projects AS p
+        ORDER BY p.project_id
+    """)
+
+    q6_report_rows = q6_project_totals.select(
+        "project_id", "task_count", "total_expenses"
+    ).to_dicts()
+
+    assert q6_report_rows == q6_independent.to_dicts(), (
+        "Question 6 totals do not match the independent calculation."
+    )
+
+    q6_independent
     return
 
 
