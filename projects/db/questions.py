@@ -89,7 +89,10 @@ def _(as_of, ask):
         LEFT JOIN people AS pe
             ON t.assignee_id = pe.person_id
         WHERE t.due_date < DATE '{as_of.isoformat()}'
-          AND t.completed_date IS NULL
+  AND (
+      t.completed_date IS NULL
+      OR t.completed_date > DATE '{as_of.isoformat()}'
+  )
         ORDER BY t.due_date, t.task_id
     """)
 
@@ -102,7 +105,7 @@ def _(mo):
     mo.md(r"""
     The query returned 65 overdue and incomplete tasks across six projects.
 
-    **Assumption.** I count a task if it was due before October 31, 2026, and has no recorded completion date. Under this definition, a task completed on November 2 is excluded.
+    **Assumption.** I use October 31, 2026, as the reporting cutoff. A task counts as overdue if it was due before that date and was still incomplete at the end of that day. For example, a task due October 30 and completed November 2 would count as overdue.
     """)
     return
 
